@@ -91,6 +91,27 @@ export const checkoutSchema = z.object({
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 
+/** The address/contact portion of checkout, reused by the client form. */
+export const checkoutFormSchema = z.object({
+  fullName: z.string().trim().min(2, "Enter the recipient's full name").max(90),
+  email: z.string().trim().email("Enter a valid email address"),
+  phone: z
+    .string()
+    .trim()
+    .min(7, "Enter a phone number we can reach you on")
+    .max(24)
+    .regex(/^[+()\d\s-]+$/, "Enter a valid phone number"),
+  address: z.string().trim().min(5, "Enter your street address").max(160),
+  city: z.string().trim().min(2, "Enter your city").max(80),
+  postalCode: z.string().trim().min(2, "Enter your postal code").max(16),
+  deliveryInstructions: z
+    .string()
+    .trim()
+    .max(500, "Keep instructions under 500 characters"),
+});
+
+export type CheckoutFormValues = z.infer<typeof checkoutFormSchema>;
+
 export const newsletterSchema = z.object({
   email: emailField,
 });
