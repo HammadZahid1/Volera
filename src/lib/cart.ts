@@ -1,27 +1,10 @@
 import { db } from "@/lib/db";
 import { SHIPPING } from "@/lib/constants";
+import type { CartLine, CartTotals } from "@/types/commerce";
+
+export type { CartLine, CartTotals } from "@/types/commerce";
 
 export const MAX_QUANTITY_PER_LINE = 10;
-
-export type CartLine = {
-  productId: string;
-  slug: string;
-  name: string;
-  price: number;
-  compareAtPrice: number | null;
-  image: string;
-  imageAlt: string;
-  stock: number;
-  quantity: number;
-  isAvailable: boolean;
-};
-
-export type CartTotals = {
-  subtotal: number;
-  shipping: number;
-  total: number;
-  itemCount: number;
-};
 
 /** Load a signed-in customer's persisted cart, clamped to current stock. */
 export async function getCartLines(userId: string): Promise<CartLine[]> {
