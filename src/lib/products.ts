@@ -241,6 +241,15 @@ export async function getAllProductSlugs() {
   });
 }
 
+export async function getWishlistProducts(userId: string) {
+  const rows = await db.wishlistItem.findMany({
+    where: { userId, product: { isActive: true } },
+    include: { product: { include: cardInclude } },
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map((row) => toProductCard(row.product));
+}
+
 export async function getProductStats() {
   const [total, activeCount, outOfStock, lowStock] = await Promise.all([
     db.product.count(),

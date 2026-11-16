@@ -53,6 +53,8 @@ export const passwordChangeSchema = z
     path: ["confirmPassword"],
   });
 
+export type PasswordChangeValues = z.infer<typeof passwordChangeSchema>;
+
 export const checkoutSchema = z.object({
   fullName: z
     .preprocess(trimmed, z.string().min(2, "Enter the recipient's full name").max(90)),
@@ -111,6 +113,18 @@ export const checkoutFormSchema = z.object({
 });
 
 export type CheckoutFormValues = z.infer<typeof checkoutFormSchema>;
+
+/** Client-side profile form; the server schema converts blank phone to null. */
+export const profileFormSchema = z.object({
+  fullName: z.string().trim().min(2, "Enter your full name").max(80),
+  phone: z
+    .string()
+    .trim()
+    .max(24, "Enter a valid phone number")
+    .regex(/^[+()\d\s-]*$/, "Enter a valid phone number"),
+});
+
+export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export const newsletterSchema = z.object({
   email: emailField,

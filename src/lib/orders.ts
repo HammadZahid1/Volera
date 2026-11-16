@@ -22,10 +22,10 @@ export function shippingFor(subtotal: number, method: "standard" | "express" = "
   return subtotal >= SHIPPING.freeThreshold ? 0 : SHIPPING.flatRate;
 }
 
-export function deliveryWindowLabel() {
-  const start = new Date();
+export function deliveryWindowLabel(from = new Date()) {
+  const start = new Date(from);
   start.setDate(start.getDate() + 3);
-  const end = new Date();
+  const end = new Date(from);
   end.setDate(end.getDate() + 6);
   const format = new Intl.DateTimeFormat("en-US", {
     month: "short",
