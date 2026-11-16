@@ -161,8 +161,55 @@ export const adminCategorySchema = z.object({
   imageUrl: productImageSchema,
 });
 
+export const loginFormSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email is required")
+    .email("Enter a valid email address"),
+  password: z.string().min(1, "Enter your password"),
+});
+
+export type LoginFormValues = z.infer<typeof loginFormSchema>;
+
+export const registerFormSchema = z
+  .object({
+    fullName: z.string().trim().min(2, "Enter your full name").max(80),
+    email: z
+      .string()
+      .trim()
+      .min(1, "Email is required")
+      .email("Enter a valid email address"),
+    password: passwordField,
+    confirmPassword: z.string().min(1, "Confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export type RegisterFormValues = z.infer<typeof registerFormSchema>;
+
 export const searchQuerySchema = z
   .string()
   .trim()
   .max(80)
   .catch("");
+
+/** Normalize a ZodError into a serializable field-error map for forms. */
+export function toFieldErrors(error: z.ZodError) {
+  const flat = z.flattenError(error);
+  const result: Record<string, string[]> = {};
+
+  for (const [key, value] of Object.entries(flat.fieldErrors)) {
+    if (Array.isArray(value) && value.length > 0) {
+      result[key] = value.filter((message): message is string => Boolean(message));
+    }
+  }
+
+  if (flat.formErrors.length > 0) {
+    result._form = flat.formErrors;
+  }
+
+  return result;
+}
