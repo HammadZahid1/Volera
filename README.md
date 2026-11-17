@@ -1,68 +1,52 @@
 # VELORA
 
-A premium full-stack e-commerce platform for modern essentials — built with
-Next.js (App Router), TypeScript, Tailwind CSS v4, Framer Motion, and Prisma
-on PostgreSQL.
+A full-stack e-commerce store built with Next.js, TypeScript, Tailwind CSS
+and Prisma. This started as a side project: I wanted to build a complete
+store from scratch, with real auth, a cart that actually persists, a
+checkout flow that can't be tricked from the client, and an admin panel to
+run it all.
 
-> **Demo notice** — VELORA is a portfolio demonstration store. Payments,
-> reviews, testimonials and seeded order history are illustrative only; no
-> real payment is ever collected (checkout records orders as
-> `paymentStatus: "not_charged"`).
+> Heads up: this is a portfolio store, not a real one. Payments, reviews and
+> the order history you see are sample data. No payment is ever taken;
+> checkout records every order as not charged.
 
-## Features
+## What's inside
 
-- **Storefront** — editorial homepage, filterable/searchable catalogue
-  (`/shop`), product detail pages, collections, new arrivals
-- **Accounts** — register/login with secure first-party sessions (scrypt
-  password hashing, HMAC-signed httpOnly session cookies, rate limiting)
-- **Cart** — persistent for signed-in users (database), guest carts in
-  localStorage, merged on sign-in; slide-over cart drawer
-- **Checkout** — server-authoritative pricing/stock validation, transactional
-  order creation, idempotency keys, guest-friendly
-- **Account area** — order history with status timeline, wishlist, profile
-  and password management
-- **Studio admin** (`/admin`) — live dashboard, product CRUD, order status
-  management (with stock restock/re-reserve logic), customer views; guarded
-  server-side by role
-- **Design** — layered dark theme, purposeful motion, reduced-motion support,
-  fully responsive
+- A storefront with a searchable, filterable catalogue, product pages,
+  collections and new arrivals
+- Accounts with proper sessions: scrypt password hashing, signed httpOnly
+  cookies and login rate limiting
+- A cart that lives in the database for signed-in users and in localStorage
+  for guests, merged when you sign in
+- Checkout that re-checks prices and stock on the server and writes the
+  order in a transaction, so nothing can be manipulated from the browser
+- An account area with order history, a wishlist and profile settings
+- An admin panel at `/admin` for products, orders and customers, guarded by
+  role on the server
+- A dark theme with restrained animation and reduced-motion support
 
-## Tech Stack
+## Tech stack
 
-| Layer      | Choice                                              |
-| ---------- | --------------------------------------------------- |
-| Framework  | Next.js 16 (App Router, Turbopack) + React 19       |
-| Styling    | Tailwind CSS v4 (`@theme` tokens)                   |
-| Animation  | Framer Motion 14                                    |
-| Database   | SQLite (bundled demo db) · PostgreSQL optional      |
-| Auth       | Custom opaque-token sessions (node:crypto)          |
-| Validation | Zod 4 + react-hook-form                             |
+| Layer      | Choice                                        |
+| ---------- | --------------------------------------------- |
+| Framework  | Next.js 16 (App Router, Turbopack) + React 19 |
+| Styling    | Tailwind CSS v4 (`@theme` tokens)             |
+| Animation  | Framer Motion 14                              |
+| Database   | SQLite (demo db included, Postgres optional)  |
+| Auth       | Custom opaque-token sessions (node:crypto)    |
+| Validation | Zod 4 + react-hook-form                       |
 
-## Getting Started
-
-### 1. Install dependencies
+## Getting started
 
 ```bash
 npm install
-```
-
-### 2. Create the database and seed demo data
-
-```bash
 npm run db:reset
-```
-
-This creates `prisma/dev.db` (SQLite) and fills it with the demo catalogue,
-demo accounts and sample orders. **No environment variables are required** —
-all seed credentials have built-in defaults.
-
-### 3. Run
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+`db:reset` creates `prisma/dev.db` and fills it with the demo catalogue,
+demo accounts and some sample orders. You don't need to set any environment
+variables first; the seed script has defaults for everything.
 
 ### Demo accounts
 
@@ -71,79 +55,77 @@ Open [http://localhost:3000](http://localhost:3000).
 | Admin    | admin@velora.com    | VeloraAdmin!2026 |
 | Customer | customer@velora.com | VeloraDemo!2026  |
 
-(Override via the `SEED_*` environment variables — see `.env.example`.)
+You can change these with the `SEED_*` variables, see `.env.example`.
 
 ## Scripts
 
-| Command             | Purpose                                      |
-| ------------------- | -------------------------------------------- |
-| `npm run dev`       | Start the development server                 |
-| `npm run build`     | Generate Prisma client + production build    |
-| `npm run start`     | Serve the production build                   |
-| `npm run lint`      | Run ESLint                                   |
-| `npm run typecheck` | Run TypeScript                               |
-| `npm run test`      | Run Vitest                                   |
-| `npm run db:push`   | Push the Prisma schema to the database       |
-| `npm run db:seed`   | Seed categories/products and demo accounts   |
-| `npm run db:reset`  | Reset the database and reseed                |
-| `npm run db:studio` | Open Prisma Studio                           |
+| Command             | Purpose                                    |
+| ------------------- | ------------------------------------------ |
+| `npm run dev`       | Start the development server               |
+| `npm run build`     | Generate Prisma client + production build  |
+| `npm run start`     | Serve the production build                 |
+| `npm run lint`      | Run ESLint                                 |
+| `npm run typecheck` | Run TypeScript                             |
+| `npm run test`      | Run Vitest                                 |
+| `npm run db:push`   | Push the Prisma schema to the database     |
+| `npm run db:seed`   | Seed categories, products and accounts     |
+| `npm run db:reset`  | Reset the database and reseed              |
+| `npm run db:studio` | Open Prisma Studio                         |
 
 ## Deploying to Vercel
 
-The project deploys with **zero configuration and zero environment
-variables**. Import the repo on Vercel, take the defaults, and it works.
+This deploys with no configuration and no environment variables. Import the
+repo on Vercel, accept the defaults, and it just works.
 
-How it works: the production build bundles `prisma/demo.db` — a pristine
-seeded snapshot of the catalogue and demo accounts (see
-`outputFileTracingIncludes` in `next.config.ts`). At runtime each serverless
-instance copies it into its writable temp directory and uses that as the
-database, so browsing, signing in, carting and even checkout all function.
+How that works: the build bundles `prisma/demo.db`, a seeded snapshot of the
+catalogue and demo accounts (see `outputFileTracingIncludes` in
+`next.config.ts`). When a serverless instance starts, it copies that file
+into a writable temp folder and uses it as the database. The live site is
+fully usable: you can browse, sign in, add to cart and place an order.
 
-### Demo-mode caveats
+### Things to know about demo mode
 
-- **Data is ephemeral per instance.** Orders, sessions and admin edits live
-  in the instance's temp copy and reset when the instance recycles or the
-  project is redeployed.
-- **Sessions can drop.** If traffic shifts to a different server instance,
-  you may be signed out (sign in again and continue).
-- `SESSION_SECRET` is optional: without it an ephemeral secret is used per
-  instance (a warning is logged). Set it in the environment for stable
-  sessions across instances.
-- Checkout and payments are simulated (`paymentStatus: "not_charged"`) — no
-  real money is ever involved.
+- Data doesn't stick. Orders and sign-ups live in that temp copy and
+  disappear when the instance recycles or you redeploy.
+- You may get signed out now and then if traffic moves to another instance.
+  Signing in again sorts it out.
+- `SESSION_SECRET` is optional. Without it, each instance generates its own
+  secret and logs a warning. Set it if you want sessions to survive across
+  instances.
+- Payments are simulated, so there's no real money anywhere.
 
 ### Using a real database instead
 
-For persistent production data, switch to PostgreSQL:
+If you want data that actually persists, switch to PostgreSQL:
 
 1. Change `provider` to `"postgresql"` in `prisma/schema.prisma` and delete
-   `prisma/demo.db` (plus its entry in `outputFileTracingIncludes`).
-2. Point `VELORA_DATABASE_URL` at your database (Supabase "Session pooler"
-   string or a Neon connection string both work).
-3. Set `SESSION_SECRET` to a 32+ character random string.
-4. Create the schema and seed: `npm run db:push && npm run db:seed`.
+   `prisma/demo.db` (and its entry in `outputFileTracingIncludes`).
+2. Point `VELORA_DATABASE_URL` at your database. A Supabase session pooler
+   string or a Neon connection string both work.
+3. Set `SESSION_SECRET` to a random string of 32+ characters.
+4. Run `npm run db:push` and then `npm run db:seed`.
 
-If you ever see Vercel's generic error page (with an ID like
-`ERROR 1654951400`), it means a server-side function crashed — check
-**Deployments → Runtime Logs** for the underlying message.
+If a deploy ever shows Vercel's generic error page (the one with an ID like
+`ERROR 1654951400`), something crashed on the server. Look under
+Deployments, then Runtime Logs, for the real message.
 
-## Project Structure
+## Project structure
 
 ```
 src/
   app/
-    (site)/        # public + account pages (storefront shell)
+    (site)/        # public and account pages (storefront shell)
     (auth)/        # login / register
     admin/         # studio admin (role-guarded)
     api/           # search API
-  components/      # UI, layout, shop, admin, order components
+  components/      # UI, layout, shop, admin and order components
   server/actions/  # server actions (auth, orders, admin)
   lib/             # db, auth, validation, cart, orders, products
 prisma/
   schema.prisma    # data model
-  seed.ts          # demo catalogue + accounts
+  seed.ts          # demo catalogue and accounts
 ```
 
 ## License
 
-Portfolio demonstration project.
+This is a portfolio project, so use the code however you like.
