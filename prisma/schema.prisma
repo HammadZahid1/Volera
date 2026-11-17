@@ -1,16 +1,16 @@
-// VELORA database schema.
+// VELORA database schema (PostgreSQL).
 //
-// Local development targets SQLite for a zero-config experience.
-// For production (Supabase / PostgreSQL), change the provider below
-// to "postgresql" and point DATABASE_URL at your database. Every
-// field type in this schema is PostgreSQL-compatible.
+// The app expects a PostgreSQL database (Supabase, Neon, Vercel Postgres,
+// or any standard Postgres instance). Point VELORA_DATABASE_URL at your
+// database — for Supabase use the "Session pooler" connection string,
+// which works for both migrations and serverless runtime queries.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("VELORA_DATABASE_URL")
 }
 
@@ -57,28 +57,28 @@ model Category {
 }
 
 model Product {
-  id              String         @id @default(cuid())
-  name            String
-  slug            String         @unique
-  sku             String         @unique
-  description     String
-  details         String
-  price           Int // stored in cents
-  compareAtPrice  Int? // stored in cents
-  categoryId      String
-  stock           Int            @default(0)
-  rating          Float          @default(0)
-  reviewCount     Int            @default(0)
-  isFeatured      Boolean        @default(false)
-  isNew           Boolean        @default(false)
-  isActive        Boolean        @default(true)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  category        Category       @relation(fields: [categoryId], references: [id])
-  images          ProductImage[]
-  orderItems      OrderItem[]
-  wishlistItems   WishlistItem[]
-  cartItems       CartItem[]
+  id             String         @id @default(cuid())
+  name           String
+  slug           String         @unique
+  sku            String         @unique
+  description    String
+  details        String
+  price          Int // stored in cents
+  compareAtPrice Int? // stored in cents
+  categoryId     String
+  stock          Int            @default(0)
+  rating         Float          @default(0)
+  reviewCount    Int            @default(0)
+  isFeatured     Boolean        @default(false)
+  isNew          Boolean        @default(false)
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  category       Category       @relation(fields: [categoryId], references: [id])
+  images         ProductImage[]
+  orderItems     OrderItem[]
+  wishlistItems  WishlistItem[]
+  cartItems      CartItem[]
 
   @@index([categoryId])
   @@index([isActive, isFeatured])
