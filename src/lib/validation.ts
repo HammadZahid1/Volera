@@ -126,6 +126,83 @@ export const profileFormSchema = z.object({
 
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
+/**
+ * Client-side product form. Numeric fields are strings in the form and are
+ * coerced by the server schema; prices are entered in dollars and stored as
+ * integer cents.
+ */
+export const adminProductFormSchema = z.object({
+  name: z.string().trim().min(2, "Enter a product name").max(120),
+  slug: z
+    .string()
+    .trim()
+    .min(2, "Enter a slug")
+    .max(120)
+    .regex(
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      "Use lowercase letters, numbers and hyphens",
+    ),
+  sku: z
+    .string()
+    .trim()
+    .min(2, "Enter a SKU")
+    .max(40)
+    .regex(/^[A-Z0-9-]+$/, "Use uppercase letters, numbers and hyphens"),
+  description: z.string().trim().min(20, "Write at least 20 characters").max(2000),
+  details: z.string().trim().min(10, "Add at least one detail line").max(1200),
+  price: z
+    .string()
+    .trim()
+    .min(1, "Enter a price")
+    .refine(
+      (value) => Number.isFinite(Number(value)) && Number(value) >= 1,
+      "Price must be greater than zero",
+    )
+    .refine((value) => Number(value) <= 100000, "Price is too high"),
+  compareAtPrice: z
+    .string()
+    .trim()
+    .max(12)
+    .refine(
+      (value) =>
+        value === "" ||
+        (Number.isFinite(Number(value)) && Number(value) >= 0),
+      "Enter a valid compare-at price",
+    ),
+  categoryId: z.string().min(1, "Choose a category"),
+  stock: z
+    .string()
+    .trim()
+    .regex(/^\d+$/, "Enter a whole number")
+    .refine((value) => Number(value) <= 100000, "Stock is too high"),
+  rating: z
+    .string()
+    .trim()
+    .regex(/^\d+(\.\d+)?$/, "Enter a rating between 0 and 5")
+    .refine(
+      (value) => Number(value) >= 0 && Number(value) <= 5,
+      "Use a rating between 0 and 5",
+    ),
+  reviewCount: z
+    .string()
+    .trim()
+    .regex(/^\d+$/, "Enter a whole number")
+    .refine((value) => Number(value) <= 1000000, "Review count is too high"),
+  isFeatured: z.boolean(),
+  isNew: z.boolean(),
+  isActive: z.boolean(),
+  images: z
+    .array(
+      z.object({
+        url: z.string().trim().url("Enter a valid image URL").max(600),
+      }),
+    )
+    .min(1, "Add at least one image")
+    .max(5),
+});
+
+export type AdminProductFormValues = z.infer<typeof adminProductFormSchema>;
+
 export const newsletterSchema = z.object({
   email: emailField,
 });

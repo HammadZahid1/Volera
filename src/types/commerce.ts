@@ -37,3 +37,8 @@ export type WishlistActionResult = ActionState & {
 export type OrderResult = ActionState & {
   orderNumber?: string;
 };
+
+export type AdminActionResult = ActionState & {
+  id?: string;
+  slug?: string;
+};

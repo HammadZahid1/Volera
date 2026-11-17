@@ -1,4 +1,9 @@
-import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
+import type {
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from "react";
 import { cn } from "@/lib/utils";
 
 const fieldBase =
@@ -38,6 +43,29 @@ export function Input({ className, invalid, leftIcon, ...props }: InputProps) {
         invalid && "border-negative/60 focus:border-negative/70",
         className,
       )}
+      aria-invalid={invalid || undefined}
+      {...props}
+    />
+  );
+}
+
+export type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
+  invalid?: boolean;
+};
+
+export function Select({ className, invalid, ...props }: SelectProps) {
+  return (
+    <select
+      className={cn(
+        fieldBase,
+        "h-11 cursor-pointer appearance-none bg-[right_0.9rem_center] bg-no-repeat pr-9",
+        invalid && "border-negative/60 focus:border-negative/70",
+        className,
+      )}
+      style={{
+        backgroundImage:
+          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23717887' stroke-width='1.8'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
+      }}
       aria-invalid={invalid || undefined}
       {...props}
     />
