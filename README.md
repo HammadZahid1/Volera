@@ -34,7 +34,7 @@ on PostgreSQL.
 | Framework  | Next.js 16 (App Router, Turbopack) + React 19       |
 | Styling    | Tailwind CSS v4 (`@theme` tokens)                   |
 | Animation  | Framer Motion 14                                    |
-| Database   | PostgreSQL via Prisma ORM                           |
+| Database   | SQLite (bundled demo db) · PostgreSQL optional      |
 | Auth       | Custom opaque-token sessions (node:crypto)          |
 | Validation | Zod 4 + react-hook-form                             |
 
@@ -46,36 +46,17 @@ on PostgreSQL.
 npm install
 ```
 
-### 2. Create a PostgreSQL database
-
-The app needs a PostgreSQL database for both local development and
-production. The easiest option is a free
-[Supabase](https://supabase.com) project:
-
-1. Create a project at [database.new](https://database.new).
-2. Open **Project Settings → Database**.
-3. Copy the **Session pooler** connection string (port `5432`).
-
-### 3. Configure environment
+### 2. Create the database and seed demo data
 
 ```bash
-cp .env.example .env
+npm run db:reset
 ```
 
-Fill in:
+This creates `prisma/dev.db` (SQLite) and fills it with the demo catalogue,
+demo accounts and sample orders. **No environment variables are required** —
+all seed credentials have built-in defaults.
 
-- `VELORA_DATABASE_URL` — your Postgres connection string
-- `SESSION_SECRET` — 32+ random characters
-  (`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`)
-
-### 4. Create the schema and seed demo data
-
-```bash
-npm run db:push   # push the Prisma schema to the database
-npm run db:seed   # create categories, products and demo accounts
-```
-
-### 5. Run
+### 3. Run
 
 ```bash
 npm run dev
@@ -90,7 +71,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | Admin    | admin@velora.com    | VeloraAdmin!2026 |
 | Customer | customer@velora.com | VeloraDemo!2026  |
 
-(Change these via the seed environment variables for your own deployment.)
+(Override via the `SEED_*` environment variables — see `.env.example`.)
 
 ## Scripts
 
@@ -109,37 +90,42 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Deploying to Vercel
 
-The project is Vercel-ready out of the box (`npm run build` generates the
-Prisma client before `next build`).
+The project deploys with **zero configuration and zero environment
+variables**. Import the repo on Vercel, take the defaults, and it works.
 
-1. **Database** — create a Supabase (or Neon) project and copy its
-   connection string. Do **not** use a local SQLite file: the serverless
-   filesystem is ephemeral.
-2. **Import the repo on Vercel** — the Next.js preset and build command are
-   detected automatically.
-3. **Set environment variables** (Project → Settings → Environment Variables):
+How it works: the production build bundles `prisma/demo.db` — a pristine
+seeded snapshot of the catalogue and demo accounts (see
+`outputFileTracingIncludes` in `next.config.ts`). At runtime each serverless
+instance copies it into its writable temp directory and uses that as the
+database, so browsing, signing in, carting and even checkout all function.
 
-   | Variable               | Value                                              |
-   | ---------------------- | -------------------------------------------------- |
-   | `VELORA_DATABASE_URL`  | Your Postgres connection string (Supabase session pooler) |
-   | `SESSION_SECRET`       | 32+ random characters — **required**, sessions fail without it |
-   | `NEXT_PUBLIC_SITE_URL` | Your production URL, e.g. `https://velora.vercel.app` |
+### Demo-mode caveats
 
-4. **Create the schema + seed** (from your machine, against the production
-   database):
+- **Data is ephemeral per instance.** Orders, sessions and admin edits live
+  in the instance's temp copy and reset when the instance recycles or the
+  project is redeployed.
+- **Sessions can drop.** If traffic shifts to a different server instance,
+  you may be signed out (sign in again and continue).
+- `SESSION_SECRET` is optional: without it an ephemeral secret is used per
+  instance (a warning is logged). Set it in the environment for stable
+  sessions across instances.
+- Checkout and payments are simulated (`paymentStatus: "not_charged"`) — no
+  real money is ever involved.
 
-   ```bash
-   # point VELORA_DATABASE_URL in .env at the production database first
-   npm run db:push
-   npm run db:seed
-   ```
+### Using a real database instead
 
-5. **Redeploy** — every push to `main` creates a new deployment.
+For persistent production data, switch to PostgreSQL:
 
-If you see Vercel's generic "Error" page (with an ID like `ERROR 1654951400`),
-it means a server-side function crashed — almost always a missing environment
-variable or an unreachable database. Check **Deployments → Runtime Logs** for
-the underlying message.
+1. Change `provider` to `"postgresql"` in `prisma/schema.prisma` and delete
+   `prisma/demo.db` (plus its entry in `outputFileTracingIncludes`).
+2. Point `VELORA_DATABASE_URL` at your database (Supabase "Session pooler"
+   string or a Neon connection string both work).
+3. Set `SESSION_SECRET` to a 32+ character random string.
+4. Create the schema and seed: `npm run db:push && npm run db:seed`.
+
+If you ever see Vercel's generic error page (with an ID like
+`ERROR 1654951400`), it means a server-side function crashed — check
+**Deployments → Runtime Logs** for the underlying message.
 
 ## Project Structure
 

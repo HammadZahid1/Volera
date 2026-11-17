@@ -16,12 +16,25 @@ export type SessionUser = {
   createdAt: Date;
 };
 
+let ephemeralSecret: string | null = null;
+let ephemeralSecretWarned = false;
+
 function sessionSecret() {
   const secret = process.env.SESSION_SECRET;
   if (!secret || secret.length < 32) {
-    throw new Error(
-      "SESSION_SECRET must be set to a random string of at least 32 characters.",
-    );
+    // Zero-config demo deployments (e.g. Vercel without env vars) fall back
+    // to an ephemeral per-process secret. Sessions signed with it are valid
+    // only while that server instance is alive, so users may be signed out
+    // when instances recycle. Real deployments should always set
+    // SESSION_SECRET to a stable 32+ character random string.
+    if (!ephemeralSecretWarned) {
+      console.warn(
+        "[velora] SESSION_SECRET is not set (or shorter than 32 chars) — using an ephemeral in-memory secret. Sessions will not survive server restarts.",
+      );
+      ephemeralSecretWarned = true;
+    }
+    ephemeralSecret ??= randomBytes(32).toString("hex");
+    return ephemeralSecret;
   }
   return secret;
 }

@@ -1,16 +1,20 @@
-// VELORA database schema (PostgreSQL).
+// VELORA database schema (SQLite).
 //
-// The app expects a PostgreSQL database (Supabase, Neon, Vercel Postgres,
-// or any standard Postgres instance). Point VELORA_DATABASE_URL at your
-// database — for Supabase use the "Session pooler" connection string,
-// which works for both migrations and serverless runtime queries.
+// Everything ships as a self-contained demo:
+// - Local development uses prisma/dev.db (created by `npm run db:reset`).
+// - Deployments bundle prisma/demo.db (a pristine seeded snapshot) and copy
+//   it to a writable temp directory at runtime — see src/lib/db.ts.
+//
+// To use a real database instead (Supabase / Neon / any PostgreSQL), change
+// the provider to "postgresql", point VELORA_DATABASE_URL at your database
+// and delete prisma/demo.db. Every field type is PostgreSQL-compatible.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("VELORA_DATABASE_URL")
 }
 
